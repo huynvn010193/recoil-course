@@ -1,6 +1,8 @@
 import {InputGroup, InputRightElement, NumberInput, NumberInputField, Text, VStack} from '@chakra-ui/react';
-import {selector, useRecoilState, useRecoilValue} from 'recoil';
+import {selector, selectorFamily, useRecoilState, useRecoilValue} from 'recoil';
 import {Element, elementState, selectedElementState} from './components/Rectangle/Rectangle';
+import _ from 'lodash';
+import produce from 'immer';
 
 // const selectedElementProperties = selector<Element | undefined>({
 //   key: 'selectedElementProperties',
@@ -17,7 +19,35 @@ import {Element, elementState, selectedElementState} from './components/Rectangl
 //   },
 // });
 
+const editPropertyState = selectorFamily<number | null, string>({
+  key: 'editProperty',
+  get:
+    (path) =>
+    ({get}) => {
+      const selectedElement = get(selectedElementState);
+      if (selectedElement === null) return null;
+      const element = get(elementState(selectedElement));
+      return _.get(element, path);
+    },
+  set:
+    (path) =>
+    ({get, set}, newValue) => {
+      console.log('newValue', newValue);
+      const selectedElement = get(selectedElementState);
+      if (selectedElement === null) return null;
+      const element = get(elementState(selectedElement));
+      // ko bị tham chiếu đến state cũ.
+      const newElement = produce(element, (draft) => {
+        _.set(draft, path, newValue);
+      });
+      set(elementState(selectedElement), newElement);
+    },
+});
+
 export const EditProperties = () => {
+  const [top, setTop] = useRecoilState(editPropertyState('style.position.top'));
+  if (top === null) return null;
+
   // const [element, setElement] = useRecoilState(selectedElementProperties);
 
   // if (!element) return null;
@@ -51,7 +81,7 @@ export const EditProperties = () => {
   return (
     <Card>
       <Section heading="Position">
-        <Property label="Top" value={1} onChange={(top) => {}} />
+        <Property label="Top" value={top} onChange={setTop} />
         {/* <Property
           label="Left"
           value={element.style.position.left}
