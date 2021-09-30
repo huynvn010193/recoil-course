@@ -19,35 +19,35 @@ import produce from 'immer';
 //   },
 // });
 
-const editPropertyState = selectorFamily<number | null, string>({
+const editPropertyState = selectorFamily<number, {path: string; id: number}>({
   key: 'editProperty',
   get:
-    (path) =>
+    ({path, id}) =>
     ({get}) => {
-      const selectedElement = get(selectedElementState);
-      if (selectedElement === null) return null;
-      const element = get(elementState(selectedElement));
+      // const selectedElement = get(selectedElementState);
+      // if (selectedElement === null) return null;
+      const element = get(elementState(id));
       return _.get(element, path);
     },
   set:
-    (path) =>
+    ({path, id}) =>
     ({get, set}, newValue) => {
-      console.log('newValue', newValue);
-      const selectedElement = get(selectedElementState);
-      if (selectedElement === null) return null;
-      const element = get(elementState(selectedElement));
+      // tham số newValue do hàm onChange của childrend truyền vào
+      // const selectedElement = get(selectedElementState);
+      // if (selectedElement === null) return null;
+
+      // dùng hàm get để get element từ atom selectedElement
+      const element = get(elementState(id));
+
       // ko bị tham chiếu đến state cũ.
       const newElement = produce(element, (draft) => {
         _.set(draft, path, newValue);
       });
-      set(elementState(selectedElement), newElement);
+      set(elementState(id), newElement);
     },
 });
 
 export const EditProperties = () => {
-  const [top, setTop] = useRecoilState(editPropertyState('style.position.top'));
-  if (top === null) return null;
-
   // const [element, setElement] = useRecoilState(selectedElementProperties);
 
   // if (!element) return null;
@@ -78,34 +78,19 @@ export const EditProperties = () => {
   //   });
   // };
 
+  const selectedElement = useRecoilValue(selectedElementState);
+  if (selectedElement === null) return null;
+
   return (
     <Card>
       <Section heading="Position">
-        <Property label="Top" value={top} onChange={setTop} />
-        {/* <Property
-          label="Left"
-          value={element.style.position.left}
-          onChange={(left) => {
-            setPosition('left', left);
-          }}
-        /> */}
+        <Property label="Top" path={'style.position.top'} id={selectedElement} />
+        <Property label="Left" path={'style.position.left'} id={selectedElement} />
       </Section>
-      {/* <Section heading="Size">
-        <Property
-          label="Width"
-          value={element.style.size.width}
-          onChange={(width) => {
-            setSize('width', width);
-          }}
-        />
-        <Property
-          label="Height"
-          value={element.style.size.height}
-          onChange={(height) => {
-            setSize('height', height);
-          }}
-        />
-      </Section> */}
+      <Section heading="Size">
+        <Property label="Width" path={'style.size.width'} id={selectedElement} />
+        <Property label="Height" path={'style.size.height'} id={selectedElement} />
+      </Section>
     </Card>
   );
 };
@@ -119,14 +104,16 @@ const Section: React.FC<{heading: string}> = ({heading, children}) => {
   );
 };
 
-const Property = ({label, value, onChange}: {label: string; value: number; onChange: (value: number) => void}) => {
+const Property = ({label, path, id}: {label: string; path: string; id: number}) => {
+  const [value, setValue] = useRecoilState(editPropertyState({path, id}));
+  if (value === null) return null;
   return (
     <div>
       <Text fontSize="14px" fontWeight="500" mb="2px">
         {label}
       </Text>
       <InputGroup size="sm" variant="filled">
-        <NumberInput value={value} onChange={(_, value) => onChange(value)}>
+        <NumberInput value={value} onChange={(_, value) => setValue(value)}>
           <NumberInputField borderRadius="md" />
           <InputRightElement pointerEvents="none" children="px" lineHeight="1" fontSize="12px" />
         </NumberInput>
