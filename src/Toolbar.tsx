@@ -1,18 +1,10 @@
 import {Icon, IconButton, VStack} from '@chakra-ui/react';
-import {useContext} from 'react';
 import {Square} from 'react-feather';
-import {atom, useSetRecoilState} from 'recoil';
-
-export const elementsState = atom<number[]>({
-  key: 'elements',
-  default: [],
-});
+import {useSetRecoilState} from 'recoil';
+import {elementsState} from './store';
 
 export const Toolbar = () => {
-  // const {addElement} = useContext(ElementsContext);
-  // const [elements, setElements] = useRecoilState(elementsState);
   const setElements = useSetRecoilState(elementsState);
-  // console.log(elements, elements.length);
   return (
     <VStack
       position="absolute"
@@ -27,6 +19,7 @@ export const Toolbar = () => {
       <IconButton
         // onClick={addElement}
         onClick={() => {
+          // tăng element lên 1 đơn vị. -> get trong elementsState
           setElements((elements) => [...elements, elements.length]);
         }}
         aria-label="Add rectangle"

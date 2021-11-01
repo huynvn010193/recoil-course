@@ -1,23 +1,8 @@
 import {InputGroup, InputRightElement, NumberInput, NumberInputField, Text, VStack} from '@chakra-ui/react';
-import {selector, selectorFamily, useRecoilState, useRecoilValue} from 'recoil';
-import {Element, elementState, selectedElementState} from './components/Rectangle/Rectangle';
+import {selectorFamily, useRecoilState, useRecoilValue} from 'recoil';
 import _ from 'lodash';
 import produce from 'immer';
-
-// const selectedElementProperties = selector<Element | undefined>({
-//   key: 'selectedElementProperties',
-//   get: ({get}) => {
-//     const selectedElementId = get(selectedElementState);
-//     if (selectedElementId === null) return;
-//     return get(elementState(selectedElementId));
-//   },
-//   set: ({get, set}, newElement) => {
-//     const selectedElementId = get(selectedElementState);
-//     if (selectedElementId === null) return;
-//     if (!newElement) return;
-//     set(elementState(selectedElementId), newElement);
-//   },
-// });
+import {elementState, selectedElementState} from './store';
 
 const editPropertyState = selectorFamily<number, {path: string; id: number}>({
   key: 'editProperty',
@@ -32,11 +17,6 @@ const editPropertyState = selectorFamily<number, {path: string; id: number}>({
   set:
     ({path, id}) =>
     ({get, set}, newValue) => {
-      // tham số newValue do hàm onChange của childrend truyền vào
-      // const selectedElement = get(selectedElementState);
-      // if (selectedElement === null) return null;
-
-      // dùng hàm get để get element từ atom selectedElement
       const element = get(elementState(id));
 
       // ko bị tham chiếu đến state cũ.
@@ -48,36 +28,6 @@ const editPropertyState = selectorFamily<number, {path: string; id: number}>({
 });
 
 export const EditProperties = () => {
-  // const [element, setElement] = useRecoilState(selectedElementProperties);
-
-  // if (!element) return null;
-
-  // const setPosition = (property: 'top' | 'left', value: number) => {
-  //   setElement({
-  //     ...element,
-  //     style: {
-  //       ...element.style,
-  //       position: {
-  //         ...element.style.position,
-  //         [property]: value,
-  //       },
-  //     },
-  //   });
-  // };
-
-  // const setSize = (property: 'width' | 'height', value: number) => {
-  //   setElement({
-  //     ...element,
-  //     style: {
-  //       ...element.style,
-  //       size: {
-  //         ...element.style.size,
-  //         [property]: value,
-  //       },
-  //     },
-  //   });
-  // };
-
   const selectedElement = useRecoilValue(selectedElementState);
   if (selectedElement === null) return null;
 
